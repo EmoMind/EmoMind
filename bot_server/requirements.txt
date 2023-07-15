@@ -1,0 +1,7 @@
+flask
+torch
+sentencepiece
+accelerate==0.18.0
+bitsandbytes==0.37.2
+git+https://github.com/huggingface/transformers.git@15641892985b1d77acc74c9065c332cd7c3f7d7f
+git+https://github.com/huggingface/peft.git@c22a57420cc539b547beb7e40cd0712c9f56910a
