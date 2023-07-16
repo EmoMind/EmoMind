@@ -1,14 +1,14 @@
-# /get_emotion
-###dict = {
+/get_emotion
+dict = {
 
     'audio': list[float],
 
     'sample_rate': int
 
-###}
+}
 
-###output = {
+output = {
 
     'emotion': str
 
-###}
+}
