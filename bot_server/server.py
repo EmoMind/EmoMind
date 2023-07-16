@@ -611,4 +611,4 @@ def answer():
   emotion = content["emotion"]
   personage = content["personage"]
   bot_ans = functions[personage](text, emotion)
-  return {"answer": bot_ans, "status_code": "200"}
+  return {"answer": bot_ans}
