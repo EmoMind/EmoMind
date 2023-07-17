@@ -1,0 +1,6 @@
+torch
+torchaudio
+faster_whisper
+transformers
+flask
+numpy

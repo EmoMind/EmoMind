@@ -5,6 +5,8 @@ dict = {
 
     'sample_rate': int
 
+    'text': str
+
 }
 
 output = {
