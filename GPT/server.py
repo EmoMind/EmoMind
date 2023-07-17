@@ -13,7 +13,7 @@ def gpt_answer():
     user = content["user_text"]
     bot = content["bot_text"]
     messages = [system]
-    if bot[0] == None:
+    if bot:
         messages.append({"role":"user","content":user[0]})
     else:
         for i in range(len(bot)):
