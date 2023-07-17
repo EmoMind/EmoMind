@@ -83,6 +83,7 @@ num2emotion = {0: 'neutral', 1: 'angry', 2: 'positive', 3: 'sad', 4: 'other'}
 
 setattr(__main__, "Net", Net)
 model = torch.load('model.pth', map_location=torch.device("cpu"))
+model.eval()
 
 
 def emotion_inference(wav, sr, text):
