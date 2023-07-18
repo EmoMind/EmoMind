@@ -1,5 +1,6 @@
 from flask import Flask, request
 from r_client import RedisClient
+from firfir import generate_capybara_sounds, text_limit
 import requests
 import torch
 
@@ -47,9 +48,15 @@ def query():
     
     
     bot_ans = gpt(mood, prompt, [None])
-    rc.add_message(user_id, bot_ans)
     
-    tts_audio = tts(bot_ans, "eugene")
+    if personage == 'capybara':
+        sounds = generate_capybara_sounds(bot_ans)
+        rc.add_message(user_id, sounds + f'({bot_ans})')
+        bot_ans = text_limit(sounds)
+    else:
+        rc.add_message(user_id, bot_ans)
+
+    tts_audio = tts(bot_ans, personage)
     
     return tts_audio
 
