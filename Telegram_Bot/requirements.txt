@@ -1,0 +1,7 @@
+aiogram
+torchaudio
+requests
+opuspy
+numpy
+pydub
+soundfile

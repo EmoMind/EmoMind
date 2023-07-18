@@ -8,4 +8,4 @@ RUN python3 download.py
 
 COPY . .
 
-CMD ["flask", "--app", "server.py", "run", "--host", "0.0.0.0"]
+CMD ["flask", "--app", "server.py", "run", "--host", "0.0.0.0", "--port", "5006"]

@@ -1,10 +1,15 @@
 from aiogram import Bot, Dispatcher, executor, types
-import config
 import os
+import tempfile
+import torchaudio
+import requests
+import torch
+import opuspy
+import numpy as np
 
 
 
-bot = Bot(token=os.environ.get("TOKEN"))
+bot = Bot(token='6294998264:AAGGTSpHfFGabeZGafEB8PxmEMi2uC4t7kU')
 dp = Dispatcher(bot)
 
 chars = {"mage":"Волшебник","jedi":"Джедай","capybara":"😎Капибара😎"}
@@ -35,8 +40,22 @@ async def help(message: types.Message):
 
 @dp.message_handler(content_types=[types.ContentType.VOICE])
 async def voice_message_handler(message: types.Message):
-    await message.answer_voice(voice=types.InputFile("test.opus", "r"))
-
+    await message.answer_chat_action(types.ChatActions.RECORD_AUDIO)
+    with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
+        file_id = message.voice.file_id
+        file = await bot.get_file(file_id)
+        file_path = file.file_path
+        print(file_path)
+        print(temp_file.name)
+        await bot.download_file(file_path, temp_file.name)
+        audio, s_r = torchaudio.load(temp_file)
+    request_disp = {"user_id": 111, "audio": audio.tolist(), "sample_rate": s_r, "personage": "wiki"}
+    tts_answer = requests.post("http://127.0.0.1:5001/query", json=request_disp)
+    with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
+        voice = torch.tensor(tts_answer.json()["audio"]).unsqueeze(0)
+        print(voice.shape)
+        torchaudio.save(temp_file.name, voice, 48000)
+        await message.answer_voice(voice=types.InputFile(temp_file.name, "r"))
 
 @dp.callback_query_handler(text_startswith="char")
 async def char_changed(call: types.CallbackQuery):

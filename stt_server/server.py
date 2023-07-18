@@ -21,7 +21,7 @@ def speech_recognize():
     content = request.json
     sample_rate = content["sample_rate"]
     audio = torch.tensor(content["audio"])
-    audio = torchaudio.functional.resample(sample_rate, 16000)
+    audio = torchaudio.functional.resample(audio, sample_rate, 16000)
     audio = audio.numpy()
     text = speech_to_text(audio)
     return {"text": text}
