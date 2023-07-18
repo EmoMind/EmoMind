@@ -11,7 +11,7 @@ def retry_with_backoff(fn, params, retries = 5, backoff_in_seconds = 1):
         try:
             return fn(**params)
         except:
-            print(x)
+            print(f'Trying to get OpenAI response, attempt - {x}')
             if x == retries:
                 raise
 
