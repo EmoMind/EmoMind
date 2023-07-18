@@ -9,7 +9,7 @@ def retry_with_backoff(fn, params, retries = 5, backoff_in_seconds = 1):
     x = 0
     while True:
         try:
-            return fn(*params)
+            return fn(**params)
         except:
             print(x)
             if x == retries:
@@ -40,6 +40,12 @@ def gpt_answer():
             messages.append({"role":"user","content":user[i]})
             messages.append({"role":"bot","content":bot[i]})
         messages.append({"role": "user", "content": user[len(user)-1]})
-    response = retry_with_backoff(openai.ChatCompletion.create,["gpt-3.5-turbo", messages])
+
+    config = {
+        'model': 'gpt-3.5-turbo',
+        'messages': messages
+    }
+
+    response = retry_with_backoff(openai.ChatCompletion.create, config)
     result = "".join(choice.message.content for choice in response.choices)
     return {"respone":result}
