@@ -49,13 +49,29 @@ async def voice_message_handler(message: types.Message):
         print(temp_file.name)
         await bot.download_file(file_path, temp_file.name)
         audio, s_r = torchaudio.load(temp_file)
-    request_disp = {"user_id": 111, "audio": audio.tolist(), "sample_rate": s_r, "personage": "wiki"}
+    request_disp = {"user_id": message.from_user.id, "audio": audio.tolist(), "sample_rate": s_r, "personage": "wiki"}
     tts_answer = requests.post("http://127.0.0.1:5001/query", json=request_disp)
     with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
         voice = torch.tensor(tts_answer.json()["audio"]).unsqueeze(0)
         print(voice.shape)
         torchaudio.save(temp_file.name, voice, 48000)
         await message.answer_voice(voice=types.InputFile(temp_file.name, "r"))
+
+@dp.message(content_types="text")
+async def text_message_handler(message: types.Message):
+    if message.is_command():
+        return
+
+    request_disp = {"user_id": message.from_user.id, "text": message.text, "personage": "wiki"}
+    tts_answer = requests.post("http://127.0.0.1:5001/text_query", json=request_disp)
+    with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
+        voice = torch.tensor(tts_answer.json()["audio"]).unsqueeze(0)
+        print(voice.shape)
+        torchaudio.save(temp_file.name, voice, 48000)
+        await message.answer_voice(voice=types.InputFile(temp_file.name, "r"))
+
+    
+    
 
 @dp.callback_query_handler(text_startswith="char")
 async def char_changed(call: types.CallbackQuery):
