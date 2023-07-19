@@ -10,10 +10,6 @@ services:
           image: emotion-server:latest
           restart: always
           network_mode: host
-  gpt_server:
-          image: gpt-server:latest
-          restart: always
-          network_mode: host
   tts_server:
           image: tts-server:latest
           restart: always
@@ -23,6 +19,6 @@ services:
           restart: always
           network_mode: host
   telegram-bot:
-          image: tg-server:latest
+          image: telegram-bot:latest
           restart: always
           network_mode: host

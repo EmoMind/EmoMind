@@ -44,11 +44,11 @@ class RedisClient:
         
     def get_character(self, user_id):
         '''Gets character field of a user'''
-        self.r.hget(user_id, key="character")
+        return self.r.hget(user_id, key="character")
     
     def get_emotion(self, user_id):
         '''Gets emotion field of a user'''
-        self.r.hget(user_id, key="emotion")
+        return self.r.hget(user_id, key="emotion")
     
     def update_emotion(self, user_id, new_emotion):
         '''Updates emotion field of a user'''

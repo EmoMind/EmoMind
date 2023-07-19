@@ -7,7 +7,7 @@ from faster_whisper import WhisperModel
 
 
 torch.set_num_threads(1)
-stt_model = WhisperModel("medium")
+stt_model = WhisperModel("medium", device="cuda:1", compute_type="float16")
 
 def speech_to_text(audio: np.ndarray) -> str:
   segments, info = stt_model.transcribe(audio)

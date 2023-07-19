@@ -14,7 +14,7 @@ dp = Dispatcher(bot)
 
 chars = {"mage":"Волшебник","jedi":"Джедай","capybara":"😎Капибара😎"}
 
-personage_voice = {"Волшебник": "baya", "Джедай": "yodrick", "😎Капибара😎": "capybara"}
+personage_voice = {"Волшебник": "olimpia", "Джедай": "yodrick", "😎Капибара😎": "capybara"}
 
 @dp.message_handler(commands=['start','change_person','cp','cc','change_char','change_character'])
 async def char_change(message: types.Message):

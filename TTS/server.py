@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import os.path
 import torch
+import sys
 
 app = Flask(__name__)
 
@@ -18,6 +19,9 @@ default_speakers = tts_model.speakers
 
 def text_to_speech(text:str, speaker_id:str) -> list:
     sample_rate = 48000
+
+    print(speaker_id, file=sys.stderr)
+    print(default_speakers, file=sys.stderr)
     
     if speaker_id in default_speakers:
         audio = tts_model.apply_tts(text=text,
