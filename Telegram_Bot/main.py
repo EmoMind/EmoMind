@@ -7,6 +7,12 @@ import torch
 import opuspy
 import numpy as np
 
+char_info = {
+    'mage': 'Привет! Я учусь в Хогвартсе, очень люблю разговоры об учебе, спорте и мечтах о будущем! А ты собираешь карточки из-под шокладных лягушек?',
+    'jedi': 'Джедай я великий, Йодрик. Мудрость великую тебе расскажу. Знаю все, за последние было несколько лет что. Расскажу тебе величие джедаев всё, ситхов подлость всю.',
+    'capybara': 'Фыр фыр-фыр фыр-фыр фыр-фыр фыр, фыр.(Здравствуй, мой молодой путник. Я открою тебе все тайны прошлого, настоящего, будущего. Не забывай о доброте, друг мой!)'
+}
+
 
 
 bot = Bot(token='6294998264:AAGGTSpHfFGabeZGafEB8PxmEMi2uC4t7kU')
@@ -57,18 +63,19 @@ async def char_changed(call: types.CallbackQuery):
     request_disp = {"user_id": call.message.chat.id, "character": personage_voice[character]}
     print(call.message.chat.id)
     requests.post("http://127.0.0.1:5001/change_character", json=request_disp)
+    await call.message.edit_text(f"Вы выбрали персонажа {character}")
+    await call.message.answer(char_info[char_id])
     if char_id == 'capybara':
-        await call.message.edit_text(f"Вы выбрали персонажа {character}")
         keyboard = types.InlineKeyboardMarkup()
         keyboard.add(types.InlineKeyboardButton(text="Песня 1", callback_data="song1"))
         keyboard.add(types.InlineKeyboardButton(text="Песня 2", callback_data="song2"))
         # keyboard.add(types.InlineKeyboardButton(text="Гифка", callback_data="gif"))
         await call.message.answer('Я могу спеть тебе песню!', reply_markup=keyboard)
     else:
-        await call.message.edit_text(f"Вы выбрали персонажа {character}")
+        pass
     await call.answer()
-    
-    
+
+
 @dp.callback_query_handler(text_startswith="song")
 async def mood_changed(call: types.CallbackQuery):
     song_type = call.data
@@ -76,8 +83,8 @@ async def mood_changed(call: types.CallbackQuery):
     await call.message.edit_text(f'Держи песенку!')
     await call.message.answer_animation(animation=types.InputFile('capy.gif'))
     await call.answer()
-    
-    
+
+
 
 @dp.message_handler(commands=['end'])
 async def char_change(message: types.Message):
