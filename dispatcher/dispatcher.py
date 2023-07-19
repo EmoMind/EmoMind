@@ -2,26 +2,48 @@ from flask import Flask, request
 from r_client import RedisClient
 from firfir import generate_capybara_sounds, text_limit
 import requests
+from requests.exceptions import RequestException
 import torch
+import sys
+import logging
+
+logging.basicConfig(format='%(levelname)s:%(asctime)s %(message)s')
 
 app = Flask(__name__)
 rc = RedisClient("localhost", "6379")
 
+sys_prompt = {
+"yodrick":"", 
+"capybara":"",
+"olimpia": ""
+}
+
+def log_requests(func):
+    def wrapper(*args, **kwargs):
+        try: 
+            result = func(*args, **kwargs)
+            return result
+        except RequestException as e:
+            logging.error(f"{func.__name__} {e}")
+            return None
+    return wrapper
+
+@log_requests
 def stt(audio, s_r):
     request = {"sample_rate": s_r, "audio": audio.tolist()[0]}
     text = requests.post("http://127.0.0.1:5005/speech_recognize", json=request)
     return (text.json()["text"])
-
+@log_requests
 def emotion(audio, s_r):
     emotion_request = {"audio": audio.tolist(), "sample_rate": s_r}
     emotion = requests.post("http://127.0.0.1:5006/get_emotion", json=emotion_request)
     return (emotion.json()["emotion"])
-
-def gpt(system_text, user_text, bot_text):
-    request_bot = {"system_text": f"Настроение пользователя - {system_text}", "user_text": user_text, "bot_text": bot_text}
+@log_requests
+def gpt(system_text, history, new_prompt):
+    request_bot = {"system_text": f"Настроение пользователя - {system_text}", "history": history, "new_prompt": new_prompt}
     bot_ans = requests.post("http://127.0.0.1:5007/gpt_answer", json=request_bot)
     return (bot_ans.json()["respone"])
-
+@log_requests
 def tts(text, speaker_id):
     request_tts = {"text": text, "speaker_id": speaker_id}
     audio_ans = requests.post("http://127.0.0.1:5008/speech_synthesize", json=request_tts)
@@ -32,72 +54,62 @@ def query():
     content = request.json
     user_id = content["user_id"]
     if not rc.user_exists(user_id):
-        rc.add_user(user_id, content["personage"])
+        rc.add_user(user_id, "yodrick")
         
     audio = content["audio"]
     s_r = content["sample_rate"]
     personage = rc.get_character(user_id)
     
     voice = torch.tensor(audio)
-    prompts = rc.get_messages(user_id)
-    prompts.append(stt(voice, s_r))
-    prompt = ". ".join(prompts)
+    history = rc.get_messages(user_id)
+    prompt = stt(voice, s_r)
     
     mood = emotion(voice, s_r)
     rc.update_emotion(user_id, mood)
     
     
-    bot_ans = gpt(mood, prompt, [None])
-    
+    bot_ans = gpt(f"{sys_prompt[personage]}. Настроение пользователя - {mood}.", history, prompt)
+    print(f"{sys_prompt[personage]}. Настроение пользователя - {mood}.", file=sys.stderr)
+    print(prompt, file=sys.stderr)
     if personage == 'capybara':
         sounds = generate_capybara_sounds(bot_ans)
-        rc.add_message(user_id, sounds + f'({bot_ans})')
+        rc.add_message(user_id, prompt,sounds + f'({bot_ans})')
         bot_ans = text_limit(sounds)
+        tts_audio = tts(bot_ans, 'capybara')
     else:
-        rc.add_message(user_id, bot_ans)
-
-    tts_audio = tts(bot_ans, personage)
-    
+        rc.add_message(user_id, prompt, bot_ans)
+        tts_audio = tts(bot_ans, personage)
     return tts_audio
 
-@app.route("/text_query", methods=["POST"])
-def text_query():
+
+@app.route("/web_query", methods=["POST"])
+def web_query():
+    content = request.json
     content = request.json
     user_id = content["user_id"]
     if not rc.user_exists(user_id):
-        rc.add_user(user_id, content["personage"])
-        
-    text = content["text"]
+        rc.add_user(user_id, "yodrick")
+    audio = content["audio"]
+    s_r = content["sample_rate"]
     personage = rc.get_character(user_id)
-    
+    voice = torch.tensor(audio)
+    user_message = stt(voice, s_r)
     prompts = rc.get_messages(user_id)
-    prompts.append(text)
+    prompts.append(user_message)
     prompt = ". ".join(prompts)
     
-    #mood = emotion(voice, s_r)
-    mood = "neutral"
+    mood = emotion(voice, s_r)
     rc.update_emotion(user_id, mood)
-    
-    bot_ans = gpt(mood, prompt, [None])
+    bot_ans = gpt(f". Настроение пользователя - {mood}.", prompt, [None])
     rc.add_message(user_id, bot_ans)
-    
-    tts_audio = tts(bot_ans, "eugene")
-    
-    return tts_audio
-    
-
+    tts_audio = tts(bot_ans, personage)
+    return [tts_audio,user_message,bot_ans]
 @app.route("/change_character", methods=["POST"])
 def change_character():
     content = request.json
     user_id = content["user_id"]
+    if not rc.user_exists(user_id):
+        rc.add_user(user_id, "yodrick")
     character = content["character"]
     rc.update_character(user_id, character)
-    return
-
-@app.route("/change_emotion", methods=["POST"])
-def change_emotion():
-    content = request.json
-    user_id = content["user_id"]
-    emotion = content["emotion"]
-    rc.update_emotion(user_id, emotion)
-    return
+    return "200"
