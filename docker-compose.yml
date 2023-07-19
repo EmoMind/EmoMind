@@ -19,7 +19,7 @@ services:
           restart: always
           network_mode: host
   dispatcher:
-          image: disptacher:latest
+          image: dispatcher:latest
           restart: always
           network_mode: host
   telegram-bot:

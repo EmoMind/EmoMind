@@ -28,8 +28,7 @@ def query():
     content = request.json
     user_id = content["user_id"]
     if not rc.user_exists(user_id):
-        rc.add_user(user_id, content["personage"])
-        
+        rc.add_user(user_id, "yodrick")
     audio = content["audio"]
     s_r = content["sample_rate"]
     personage = rc.get_character(user_id)
@@ -41,28 +40,21 @@ def query():
     
     mood = emotion(voice, s_r)
     rc.update_emotion(user_id, mood)
-    
-    
-    bot_ans = gpt(mood, prompt, [None])
+    bot_ans = gpt(f". Настроение пользователя - {mood}.", prompt, [None])
     rc.add_message(user_id, bot_ans)
-    
-    tts_audio = tts(bot_ans, "eugene")
-    
+    tts_audio = tts(bot_ans, personage)
     return tts_audio
-    
+
+@app.route("/web_query", methods=["POST"])
+def web_query():
+    content = request.json
 
 @app.route("/change_character", methods=["POST"])
 def change_character():
     content = request.json
     user_id = content["user_id"]
+    if not rc.user_exists(user_id):
+        rc.add_user(user_id, "yodrick")
     character = content["character"]
     rc.update_character(user_id, character)
-    return
-
-@app.route("/change_emotion", methods=["POST"])
-def change_emotion():
-    content = request.json
-    user_id = content["user_id"]
-    emotion = content["emotion"]
-    rc.update_emotion(user_id, emotion)
     return
