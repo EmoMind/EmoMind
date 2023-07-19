@@ -28,10 +28,10 @@ class RedisClient:
         '''Deletes user'''
         self.r.delete(user_id)
     
-    def add_message(self, user_id, new_message):
-        '''Adds new message to a user. Max amount of messages is set by N_MESSAGES'''
+    def add_message(self, user_id, user_message, bot_message):
+        '''Adds message and bot answer to a user. Max amount of messages is set by N_MESSAGES'''
         msgs = self.get_messages(user_id)
-        msgs.append(new_message)
+        msgs.append((user_message, bot_message))
         if len(msgs) > self.N_MESSAGES:
             del msgs[0]
         msgs_serialized = json.dumps(msgs)
@@ -44,11 +44,11 @@ class RedisClient:
         
     def get_character(self, user_id):
         '''Gets character field of a user'''
-        self.r.hget(user_id, key="character")
+        return self.r.hget(user_id, key="character")
     
     def get_emotion(self, user_id):
         '''Gets emotion field of a user'''
-        self.r.hget(user_id, key="emotion")
+        return self.r.hget(user_id, key="emotion")
     
     def update_emotion(self, user_id, new_emotion):
         '''Updates emotion field of a user'''

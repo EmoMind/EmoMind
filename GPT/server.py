@@ -2,7 +2,7 @@ import openai
 from flask import Flask, request
 import os
 
-openai.api_key = "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"
+openai.api_key = "*"
 
 app = Flask(__name__)
 
@@ -10,16 +10,13 @@ app = Flask(__name__)
 def gpt_answer():
     content = request.json
     system = {"role":"system","content":content["system_text"]}
-    user = content["user_text"]
-    bot = content["bot_text"]
+    history = content["history"]
     messages = [system]
-    if bot:
-        messages.append({"role":"user","content":user[0]})
-    else:
-        for i in range(len(bot)):
-            messages.append({"role":"user","content":user[i]})
-            messages.append({"role":"bot","content":bot[i]})
-        messages.append({"role": "user", "content": user[len(user)-1]})
+    new_prompt = content["new_prompt"]
+    for message in history:
+        messages.append({"role":"user","content":message[0]})
+        messages.append({"role":"assistant","content":message[1]})
+    messages.append({"role": "user", "content": new_prompt})
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages
