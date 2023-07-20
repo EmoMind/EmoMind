@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 from r_client import RedisClient
 from firfir import generate_capybara_sounds, text_limit
 import requests
@@ -25,6 +25,7 @@ def log_requests(func):
             return result
         except RequestException as e:
             logging.error(f"{func.__name__} {e}")
+            abort(500)
             return None
     return wrapper
 
@@ -65,10 +66,13 @@ def query():
     prompt = stt(voice, s_r)
     
     mood = emotion(voice, s_r)
+    previous_mood = rc.get_emotion(user_id)
     rc.update_emotion(user_id, mood)
     
-    
-    bot_ans = gpt(f"{sys_prompt[personage]}. Настроение пользователя - {mood}.", history, prompt)
+    if previous_mood == mood:
+        bot_ans = gpt(f"{sys_prompt[personage]}. Настроение пользователя - {mood}.", history, prompt)
+    else:
+        bot_ans = gpt(f"{sys_prompt[personage]}. Настроение пользователя изменилось с {previous_mood} на {mood}.", history, prompt)
     print(f"{sys_prompt[personage]}. Настроение пользователя - {mood}.", file=sys.stderr)
     print(prompt, file=sys.stderr)
     if personage == 'capybara':
@@ -79,6 +83,7 @@ def query():
     else:
         rc.add_message(user_id, prompt, bot_ans)
         tts_audio = tts(bot_ans, personage)
+    logging.info(f"{U: {prompt} B: {bot_ans}")
     return tts_audio
 
 
