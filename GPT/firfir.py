@@ -1,7 +1,7 @@
 import random
 
 
-def generate_capybara_sounds(text: str) -> str:
+def generate_capybara_sounds(text: str, audio) -> str:
     n = len(text.split())+14
     dots = text.count('. ')+1
     phrases = ['фыр-фыр', 'фыр']
@@ -25,5 +25,18 @@ def generate_capybara_sounds(text: str) -> str:
         else:
             new_sentence.append(batch)
     sentence = ''.join(new_sentence).replace('.Ф', '. Ф')
-    sentence = ''.join([random.choice(['!', '?', '...']) if random.randint(0, 3) == 1 and x == '.' else x for x in sentence])
-    return sentence
+
+    sentence = ''.join(
+        [random.choice(['!', '?', '...'])
+         if random.randint(0, 3) == 1 and x == '.'
+         else x for x in sentence])
+    answer = sentence
+    if audio:
+        answer = sentence.replace('ы', '')
+    return answer
+
+
+def text_limit(text):
+    words = text.split(' ')
+    return ' '.join(words[:15])
+
