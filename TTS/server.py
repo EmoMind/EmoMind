@@ -3,12 +3,15 @@ import os.path
 import torch
 import sys
 
+torch._C._jit_set_profiling_mode(False)
+
 app = Flask(__name__)
 
 language = 'ru'
 model_id = 'v3_1_ru'
-device = torch.device('cpu')
+device = torch.device('cuda')
 torch.hub.set_dir(".")
+
 
 tts_model, _ = torch.hub.load(repo_or_dir='snakers4/silero-models',
                                      model='silero_tts',

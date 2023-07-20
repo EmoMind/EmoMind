@@ -28,10 +28,10 @@ class RedisClient:
         '''Deletes user'''
         self.r.delete(user_id)
     
-    def add_message(self, user_id, new_message):
+    def add_message(self, user_id, user_message, bot_message):
         '''Adds new message to a user. Max amount of messages is set by N_MESSAGES'''
         msgs = self.get_messages(user_id)
-        msgs.append(new_message)
+        msgs.append((user_message, bot_message))
         if len(msgs) > self.N_MESSAGES:
             del msgs[0]
         msgs_serialized = json.dumps(msgs)

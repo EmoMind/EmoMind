@@ -6,6 +6,13 @@ services:
           image: stt-server:latest
           restart: always
           network_mode: host
+          deploy:
+            resources:
+              reservations:
+                devices:
+                - driver: nvidia
+                  device_ids: ['3']
+                  capabilities: [gpu]
   emotion_server:
           image: emotion-server:latest
           restart: always
@@ -14,6 +21,13 @@ services:
           image: tts-server:latest
           restart: always
           network_mode: host
+          deploy:
+            resources:
+              reservations:
+                devices:
+                - driver: nvidia
+                  device_ids: ['3']
+                  capabilities: [gpu]
   dispatcher:
           image: dispatcher:latest
           restart: always
