@@ -2,7 +2,7 @@ import redis
 import json
 
 class RedisClient:
-    N_MESSAGES = 3
+    N_MESSAGES = 6
     def __init__(self, host, port):
         self.r = redis.Redis(host=host, port=port, decode_responses=True)
         
@@ -53,7 +53,12 @@ class RedisClient:
     def update_emotion(self, user_id, new_emotion):
         '''Updates emotion field of a user'''
         self.r.hset(user_id, key="emotion", value=new_emotion)
+
+    def clear_messages(self, user_id):
+        '''Deletes user messages'''
+        self.r.hset(user_id, key="messages", value="[]")
         
     def update_character(self, user_id, new_character):
         '''Updates character field of a user'''
         self.r.hset(user_id, key="character", value=new_character)
+        self.clear_messages(user_id)

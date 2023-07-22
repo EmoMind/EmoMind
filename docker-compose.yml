@@ -32,6 +32,8 @@ services:
           image: dispatcher:latest
           restart: always
           network_mode: host
+          volumes:
+            - /home/ubuntu/logs:/logging
   telegram-bot:
           image: telegram-bot:latest
           restart: always

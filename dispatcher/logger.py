@@ -1,7 +1,7 @@
 import sys
 import datetime
 
-filename = 'server.log'
+filename = '/logging/server.log'
 
 def write_log(message):
     with open(filename, 'a') as handler:
