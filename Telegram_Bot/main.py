@@ -19,20 +19,29 @@ personage_voice = {"Олимпия из Хогвартса": "olimpia", "Йод�
 char_info = {
     'mage': 'Привет! Я ученица факультета Хаффлпафф школы магии и волшебства - Хогвартс. Как капитан команды по квиддичу я здесь, чтобы всегда вдохновлять тебя на достижение больших целей - будь то спорт или учеба!',
     'jedi': 'Привет! Я - Йодрик, троюродный внук самого магистра Йоды, наставником джедаев я являюсь. Готов указать путь решения твоих проблем любых, даже если в безвыходном положении, тебе кажется, ты оказался.',
-    'capybara': 'Фыр фыр-фыр фыр-фыр фыр-фыр фыр, фыр.(Привет, мой дорогой друг! Уверена, тебе уже известно, кто я. Я - великая капибара, которая живет уже более миллиарда лет и видела великие события. Обращайся ко мне, когда будет казаться, что мир вокруг стал сложным и слишком большим. Я всегда помогу тебе найти гармионию и успокоиться.)'
+    'capybara': 'Фыр фыр-фыр фыр-фыр фыр-фыр фыр, фыр. (Привет, мой дорогой друг! Уверена, тебе уже известно, кто я. Я - великая капибара, которая живет уже более миллиарда лет и видела великие события. Обращайся ко мне, когда будет казаться, что мир вокруг стал сложным и слишком большим. Я всегда помогу тебе найти гармионию и успокоиться.)'
 }
 
 help_dict = {
      'help_1': 'Привет, друг! Я расскажу тебе, что умею.'+
-     '\nТы можешь отправить мне текстовое или голосовое сообщение.'+
+     '\nТы можешь отправить мне голосовое сообщение.'+
      ' \nЯ могу посоветовать тебе фильм, песню, просто поболтать с тобой. Удачи!',
      'help_2': 'Для начала общения, выбери персонажа. Для этого нажми на одну из предложенных кнопок.'+
-     '\nДалее, запиши мне голосовое сообщение или напиши свою просьбу текстом.'+
+     '\nДалее, запиши мне голосовое сообщение.'+
      '\nЕсли ты хочешь прекратить общение, нажми на кнопку «/end» в меню. Удачи!'
  }
 
+@dp.message_handler(commands=['start'])
+async def onstart(message: types.Message):
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text="Олимпия из Хогвартса", callback_data="char_mage"))
+    keyboard.add(types.InlineKeyboardButton(text="Йодрик внук Йоды", callback_data="char_jedi"))
+    keyboard.add(types.InlineKeyboardButton(text="😎Капибара😎", callback_data="char_capybara"))
+    await message.answer('Выбери персонажа, с которым ты хочешь пообщаться', reply_markup=keyboard)
+    await message.answer("Предупреждаем, что все запросы сохраняются для анализа работы чат-бота")
 
-@dp.message_handler(commands=['start','change_person','cp','cc','change_char','change_character'])
+
+@dp.message_handler(commands=['change_person','cp','cc','change_char','change_character'])
 async def char_change(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Олимпия из Хогвартса", callback_data="char_mage"))
@@ -79,6 +88,7 @@ async def char_changed(call: types.CallbackQuery):
     print(call.message.chat.id)
     requests.post("http://127.0.0.1:5001/change_character", json=request_disp)
     await call.message.edit_text(f"Вы выбрали персонажа {character}")
+    await call.message.answer_photo(photo=types.InputFile(f"{personage_voice[character]}.png", "r"))
     await call.message.answer_voice(voice=types.InputFile(f'{personage_voice[character]}_welcome.opus', "r"))
     await call.message.answer(char_info[char_id])
     if char_id == 'capybara':
@@ -111,22 +121,23 @@ async def char_change(message: types.Message):
 
 @dp.message_handler(content_types="text")
 async def text_message_handler(message: types.Message):
-    if message.is_command():
-        return
-
-    request_disp = {"user_id": message.from_user.id, "text": message.text}
-    await message.answer_chat_action(types.ChatActions.RECORD_AUDIO)
-    tts_answer = requests.post("http://127.0.0.1:5001/text_query", json=request_disp)
-    with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
-        if "audio" in tts_answer.json():
-            voice = torch.tensor(tts_answer.json()["audio"]).unsqueeze(0)
-            torchaudio.save(temp_file.name, voice, 48000)
-            result_file = temp_file.name.replace('wav', 'ogg')
-            convert_to_voice_cmd = f"ffmpeg -i {temp_file.name} -c:a libopus {result_file}"
-            subprocess.run(f"{convert_to_voice_cmd}", shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            await message.answer_voice(voice=types.InputFile(result_file, "r"))
-        await message.answer(tts_answer.json()["text_answer"])
-        os.remove(result_file)
+    await message.answer("К сожалению, пока я умею отвечать только на голосовые сообщения")
+#    if message.is_command():
+#        return
+#
+#    request_disp = {"user_id": message.from_user.id, "text": message.text}
+#    await message.answer_chat_action(types.ChatActions.RECORD_AUDIO)
+#    tts_answer = requests.post("http://127.0.0.1:5001/text_query", json=request_disp)
+#    with tempfile.NamedTemporaryFile(suffix=".wav") as temp_file:
+#        if "audio" in tts_answer.json():
+#            voice = torch.tensor(tts_answer.json()["audio"]).unsqueeze(0)
+#            torchaudio.save(temp_file.name, voice, 48000)
+#            result_file = temp_file.name.replace('wav', 'ogg')
+#            convert_to_voice_cmd = f"ffmpeg -i {temp_file.name} -c:a libopus {result_file}"
+#            subprocess.run(f"{convert_to_voice_cmd}", shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+#            await message.answer_voice(voice=types.InputFile(result_file, "r"))
+#        await message.answer(tts_answer.json()["text_answer"])
+#        os.remove(result_file)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

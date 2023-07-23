@@ -2,7 +2,7 @@ import redis
 import json
 
 class RedisClient:
-    N_MESSAGES = 6
+    N_MESSAGES = 3
     def __init__(self, host, port):
         self.r = redis.Redis(host=host, port=port, decode_responses=True)
         

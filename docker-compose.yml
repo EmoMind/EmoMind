@@ -29,12 +29,16 @@ services:
                   device_ids: ['3']
                   capabilities: [gpu]
   dispatcher:
-          image: dispatcher:latest
-          restart: always
-          network_mode: host
-          volumes:
-            - /home/ubuntu/logs:/logging
+    image: dispatcher:latest
+    restart: always
+    network_mode: host
+    volumes:  
+      - /home/ubuntu/logs:/logging
   telegram-bot:
-          image: telegram-bot:latest
-          restart: always
-          network_mode: host
+    image: telegram-bot:latest
+    restart: always
+    network_mode: host
+  site-back:
+    image: site-back:latest
+    restart: always
+    network_mode: host
